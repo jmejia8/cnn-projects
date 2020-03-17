@@ -13,30 +13,30 @@ include("architecture.jl")
 # Function to convert the RGB image to Float64 Arrays
 
 getarray(X) = Float32.(permutedims(channelview(X), (2, 3, 1)))
+accuracy(m, x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
-function mytrainer!(train_set, X_test, Y_test)
+function mytrainer(train_set, X_test, Y_test)
     m = testCNN()
 
     loss(x, y) = crossentropy(m(x), y)
 
-    accuracy(x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
     # Defining the callback and the optimizer
 
-    evalcb = throttle(() -> @show(accuracy(X_test, Y_test)), 1)
+    evalcb = throttle(() -> @show(accuracy(m, X_test, Y_test)), 1)
 
     opt = ADAGrad()
 
     # Starting to train models
 
     Flux.train!(loss, params(m), train_set, opt, cb = evalcb)
-
+    m
 end
 
 
 function main()
     # Fetching the train and validation data and getting them into proper shape
-    N_train = 5000
+    N_train = 35000
     N_test = 1000
     I = randperm(50000)
     train_set_idx = I[1:N_train]
@@ -55,7 +55,7 @@ function main()
 
 
 
-    mytrainer!(train_set, X_test, Y_test)
+    m = mytrainer(train_set, X_test, Y_test)
 
     # Fetch the test data from Metalhead and get it into proper shape.
     # CIFAR-10 does not specify a validation set so valimgs fetch the testdata instead of testimgs
@@ -68,5 +68,7 @@ function main()
 
     # Print the final accuracy
 
-    @show(accuracy(testX, testY))
+    @show(accuracy(m, testX, testY))
 end
+
+main()
