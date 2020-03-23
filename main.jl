@@ -5,7 +5,6 @@ using Images: channelview
 using Statistics: mean
 using Base.Iterators: partition
 import Random: randperm, seed!
-using PyPlot
 
 include("architecture.jl")
 
@@ -17,6 +16,7 @@ getarray(X) = Float32.(permutedims(channelview(X), (2, 3, 1)))
 accuracy(m, x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
 function mytrainer(train_set, X_test, Y_test; parm = 0.9)
+    max_epochs = 30
     m = testCNN()
 
     loss(x, y) = crossentropy(m(x), y)
@@ -24,14 +24,18 @@ function mytrainer(train_set, X_test, Y_test; parm = 0.9)
 
     # Defining the callback and the optimizer
 
-    # evalcb = throttle(() -> @show(accuracy(m, X_test, Y_test)), 10)
-    evalcb = throttle(() -> println("training..."), 10)
+    evalcb = throttle(() -> @show(accuracy(m, X_test, Y_test)), 10)
+    # evalcb = throttle(() -> println("training..."), 10)
 
-    opt = ADADelta(0.9)
+    opt = ADAMW()
 
     # Starting to train models
 
-    Flux.train!(loss, params(m), train_set, opt, cb = evalcb)
+    accuracies = Float64[]
+    for t = 1:max_epochs
+        Flux.train!(loss, params(m), train_set, opt, cb = evalcb)
+        push!(accuracies, accuracy(m, X_test, Y_test))
+    end
     m
 end
 
@@ -40,9 +44,9 @@ function main()
     seed!(1)
 
     # Fetching the train and validation data and getting them into proper shape
-    N_train = 500
-    N_test = 100
-    I = randperm(50000)
+    N_train = 49000
+    N_test = 10000
+    I = 1:50000 #randperm(50000)
     train_set_idx = I[1:N_train]
     test_set_idx = reverse(I)[1:N_test]
 
@@ -70,12 +74,8 @@ function main()
 
     # Print the final accuracy
 
-    for v = range(0.1, 2, length = 10)
-        m = mytrainer(train_set, X_test, Y_test; parm = v)
-        @show v
-        @show(accuracy(m, X_eval, Y_eval))
-        println("----------------------------------------------------------")
-    end
+    m = mytrainer(train_set, X_test, Y_test)
+    @show(accuracy(m, X_eval, Y_eval))
     # return imshow(imgs[2])
 end
 
