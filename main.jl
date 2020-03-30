@@ -50,43 +50,34 @@ function mytrainer(train_set, X_test, Y_test; parm = 0.9)
     end
 
     weights = params(cpu(m))
-    # @save "mymodel.bson" weights
+    @save "mymodel.bson" weights
     m, accuracies
+end
+
+function getData()
+	X = trainimgs(CIFAR10)
+	imgs = [getarray(X[i].img) for i in 1:50000]
+	labels = onehotbatch([X[i].ground_truth.class for i in 1:50000],1:10)
+	train = gpu.([(cat(imgs[i]..., dims = 4), labels[:,i]) for i in partition(1:49000, 100)])
+	valset = collect(49001:50000)
+	valX = cat(imgs[valset]..., dims = 4) |> gpu
+	valY = labels[:, valset] |> gpu
+	return train, valX, valY	
+
 end
 
 function main()
 
     seed!(1)
-
-    # Fetching the train and validation data and getting them into proper shape
-    N_train = 5000
-    N_test = 1000
-    I = randperm(50000)
-    train_set_idx = I[1:N_train]
-    test_set_idx = reverse(I)[1:N_test]
-
-    println("Loading images")
-    X = trainimgs(CIFAR10)
-    
-    imgs = [getarray(x.img) for x in X]
-    labels = onehotbatch([x.ground_truth.class for x in X], 1:10)
-    
-
-    X_train = cat(imgs[train_set_idx]..., dims = 4) |> gpu
-    Y_train = labels[:, train_set_idx] |> gpu 
-    
-    X_test = cat(imgs[test_set_idx]..., dims = 4) |> gpu
-    Y_test = labels[:, test_set_idx] |> gpu
-
-    train_set = gpu.([(cat(imgs[i]..., dims = 4), labels[:,i]) for i in partition(train_set_idx, 10)])
-
+	println("Loading images")
+	train_set, X_test, Y_test = getData()
 
     println("Loading validation images")
     test = valimgs(CIFAR10)
 
     testimgs = [getarray(test[i].img) for i in 1:100]
-    Y_eval = onehotbatch([test[i].ground_truth.class for i in 1:100], 1:10) |> gpu
-    X_eval = cat(testimgs..., dims = 4) |> gpu
+    Y_eval = onehotbatch([test[i].ground_truth.class for i in 1:100], 1:10)  |> gpu 
+    X_eval = cat(testimgs..., dims = 4)  |> gpu 
 
     # Print the final accuracy
 
@@ -99,4 +90,8 @@ function main()
     # return imshow(imgs[2])
 end
 
+
 main()
+
+
+
