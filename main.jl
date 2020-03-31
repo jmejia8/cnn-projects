@@ -8,7 +8,7 @@ import Random: randperm, seed!
 using Plots
 using BSON: @save, @load
 
-pyplot(legend=false)
+pyplot(legend=false, reuse=true)
 
 include("architecture.jl")
 
@@ -20,12 +20,12 @@ getarray(X) = Float32.(permutedims(channelview(X), (2, 3, 1)))
 accuracy(m, x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
 function mytrainer(train_set, X_test, Y_test; parm = 0.9)
-    max_epochs = 30
+    max_epochs = 10
     m = testCNN()
 
     if isfile("mymodel.bson")
-        @load "mymodel.bson" weights
-        Flux.loadparams!(m, weights)
+		@load "mymodel.bson" model
+		Flux.loadparams!(m, params(model))
     end
 
     loss(x, y) = crossentropy(m(x), y)
@@ -45,12 +45,14 @@ function mytrainer(train_set, X_test, Y_test; parm = 0.9)
         Flux.train!(loss, params(m), train_set, opt)
         a = accuracy(m, X_test, Y_test)
         println("Epoch ", t, " accuracy: ", a)
-
+	
         push!(accuracies, a)
-    end
+		p = plot(1:t, accuracies, reuse=true, markershape=:o, xlim=[1,  max_epochs], ylim=[0, 1])
+		gui()
+	end
 
-    weights = params(cpu(m))
-    @save "mymodel.bson" weights
+	model = m
+	@save "mymodel.bson" model
     m, accuracies
 end
 
@@ -66,32 +68,52 @@ function getData()
 
 end
 
-function main()
 
-    seed!(1)
-	println("Loading images")
-	train_set, X_test, Y_test = getData()
+function evalModel(file_name)
+
+	!isfile(file_name) && error("No existing file.") 
+	@load file_name model
+
+	m = testCNN()
+	Flux.loadparams!(m, params(model))
+
 
     println("Loading validation images")
     test = valimgs(CIFAR10)
-
-    testimgs = [getarray(test[i].img) for i in 1:100]
-    Y_eval = onehotbatch([test[i].ground_truth.class for i in 1:100], 1:10)  |> gpu 
+	println("perro")
+	testimgs = [getarray(test[i].img) for i in 1:1000]
+	
+	println("gato")
+	Y_eval = onehotbatch([test[i].ground_truth.class for i in 1:1000], 1:10)  |> gpu 
     X_eval = cat(testimgs..., dims = 4)  |> gpu 
+
+    println("Testing...")
+    @show(accuracy(m, X_eval, Y_eval))
+    # return imshow(imgs[2])
+end
+
+
+function main()
+
+    seed!(1)
+
+
+	p = plot(title="Accuracy", reuse=true)
+	gui()
+	
+	println("Loading images")
+	train_set, X_test, Y_test = getData()
+
+
 
     # Print the final accuracy
 
     println("Training...")
     m, accuracies = mytrainer(train_set, X_test, Y_test)
     
-    println("Testing...")
-    @show(accuracy(m, X_eval, Y_eval))
-    plot(1:length(accuracies), accuracies, markershape = :o)
-    # return imshow(imgs[2])
 end
 
-
-main()
-
+#main()
+evalModel("mymodel.bson")
 
 
