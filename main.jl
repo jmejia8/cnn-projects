@@ -68,15 +68,20 @@ function getData()
 
 end
 
-
-function evalModel(file_name)
-
+function getSavedModel(file_name)
+	
 	!isfile(file_name) && error("No existing file.") 
 	@load file_name model
 
 	m = testCNN()
 	Flux.loadparams!(m, params(model))
 
+	return m
+
+end
+
+function evalModel(file_name)
+	m = getSavedModel(file_name)
 
     println("Loading validation images")
     test = valimgs(CIFAR10)
@@ -114,6 +119,6 @@ function main()
 end
 
 #main()
-evalModel("mymodel.bson")
+@time evalModel("mymodel.bson")
 
 
