@@ -1,12 +1,13 @@
 using Flux, Metalhead, Statistics
 using Flux: onehotbatch, onecold, crossentropy, throttle
 using Metalhead: trainimgs
-using Images: channelview
+using Images: channelview, RGB, load
 using Statistics: mean
 using Base.Iterators: partition
 import Random: randperm, seed!
 using Plots
 using BSON: @save, @load
+using Printf: @printf, @sprintf
 
 pyplot(legend=false, reuse=true)
 
@@ -20,7 +21,7 @@ getarray(X) = Float32.(permutedims(channelview(X), (2, 3, 1)))
 accuracy(m, x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
 function mytrainer(train_set, X_test, Y_test; parm = 0.9)
-    max_epochs = 10
+    max_epochs = 5
     m = testCNN()
 
     if isfile("mymodel.bson")
@@ -97,10 +98,27 @@ function evalModel(file_name)
     # return imshow(imgs[2])
 end
 
+function classify(model_file, image)
+	
+	m = getSavedModel(model_file)
+
+	x = getarray(image)
+	@show size(x)
+	
+	xx = cat(x, dims=4)
+	@show size(xx) 
+	vals = m(xx)
+	
+	
+	l = @layout [ a  b ]
+	p = plot( image, layout=l, title=CIFAR10.C10Labels[argmax(vals)])
+	bar!(p[2], CIFAR10.C10Labels, vals, orientation = :h)
+
+
+end
 
 function main()
 
-    seed!(1)
 
 
 	p = plot(title="Accuracy", reuse=true)
@@ -119,6 +137,15 @@ function main()
 end
 
 #main()
-@time evalModel("mymodel.bson")
 
+#@time evalModel("mymodel.bson")
+
+for i = 1:157
+	img_path = @sprintf("/home/jesus/Downloads/video/jpg/image-%03d.jpg", i)
+	p = classify("cnntest.bson", load(img_path))
+	
+	fname = @sprintf("img/image-%03d.png", i)
+	@show fname
+	savefig(p, fname)	
+end
 
