@@ -1,0 +1,6 @@
+*.pdf
+*.out
+*_img
+bson/
+*.bson
+
