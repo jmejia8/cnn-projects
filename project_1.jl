@@ -21,11 +21,11 @@ getarray(X) = Float32.(permutedims(channelview(X), (2, 3, 1)))
 accuracy(m, x, y) = mean(onecold(cpu(m(x)), 1:10) .== onecold(cpu(y), 1:10))
 
 function mytrainer(train_set, X_test, Y_test; parm = 0.9)
-    max_epochs = 5
+    max_epochs = 30
     m = testCNN()
 
-    if isfile("mymodel.bson")
-		@load "mymodel.bson" model
+    if isfile("tmp_model.bson")
+		@load "tmp_model.bson" model
 		Flux.loadparams!(m, params(model))
     end
 
@@ -42,18 +42,41 @@ function mytrainer(train_set, X_test, Y_test; parm = 0.9)
     # Starting to train models
 
     accuracies = Float64[]
+	the_loss = Float64[]
+
+	#all_loss(x, y) = 
+
     for t = 1:max_epochs
         Flux.train!(loss, params(m), train_set, opt)
-        a = accuracy(m, X_test, Y_test)
-        println("Epoch ", t, " accuracy: ", a)
+    
+		bson_file = "tmp_model_epoch$(t).bson"
+		model = m
+		@save bson_file model
+		
+		a = accuracy(m, X_test, Y_test)
+		lss = mean(loss(X_test, Y_test))
+        println("Epoch ", t, " accuracy: ", a, " loss: ", lss)
 	
-        push!(accuracies, a)
-		p = plot(1:t, accuracies, reuse=true, markershape=:o, xlim=[1,  max_epochs], ylim=[0, 1])
+        push!(accuracies, 1 - a)
+		push!(the_loss, lss)
+		l = @layout [a; b]
+		p = plot(1:t, accuracies, reuse=true, markershape=:o,
+				 	  layout=l,
+ 					  xlabel="Epoch", ylabel="Error",
+				 	  xlim=[1,  max_epochs],
+					  #ylim=[0, 1]
+					  )
+		plot!(p[2], 1:t, the_loss, reuse=true,
+			  markershape=:o,
+			  #ylim=[0, 3],
+			  xlim=[1,  max_epochs],
+			  xlabel="Epoch",
+			  ylabel="Loss")
 		gui()
 	end
 
 	model = m
-	@save "mymodel.bson" model
+	@save "tmp_model.bson" model
     m, accuracies
 end
 
@@ -103,10 +126,8 @@ function classify(model_file, image)
 	m = getSavedModel(model_file)
 
 	x = getarray(image)
-	@show size(x)
 	
 	xx = cat(x, dims=4)
-	@show size(xx) 
 	vals = m(xx)
 	
 	
@@ -120,8 +141,8 @@ end
 function main()
 
 
-
-	p = plot(title="Accuracy", reuse=true)
+	l = @layout [a;b]
+	p = plot( layout=l, reuse=true)
 	gui()
 	
 	println("Loading images")
@@ -152,13 +173,17 @@ function createVideo()
 end
 #main()
 
-#@time evalModel("mymodel.bson")
+#@time evalModel("tmp_model.bson")
+function classifyDummy()
 
+	for fname in ["titanic.jpg","cyber.jpg","delorean.jpg","bird.jpg" ]
+		p = classify("bson/cnntest.bson", load(joinpath("input_img", fname)))
+		savefig(p, joinpath("outout_img",fname))
+		println(fname)
+	end
 
-for fname in ["titanic.jpg","cyber.jpg","delorean.jpg","bird.jpg" ]
-	p = classify("bson/cnntest.bson", load(joinpath("imgs", fname)))
-	savefig(p, fname)
-	println(fname)
 end
+
+main()
 
 
