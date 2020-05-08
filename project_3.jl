@@ -1,5 +1,5 @@
 ## Classification of CIFAR100 dataset
-## with the convolutional neural network know as JesNet1.
+## with the convolutional neural network know as JesNet2.
 ## This script also combines various
 ## packages from the Julia ecosystem  with Flux.
 using Flux
@@ -20,31 +20,27 @@ using Plots
 gr(legend=false)
 imshow(x; kargs...) = plot(Gray.(x);kargs...)
 imshow!(p, x; kargs...) = plot!(p, Gray.(x);kargs...)
-# JesNet1 "constructor".
+# JesNet2 "constructor".
 # The model can be adapted to any image size
 # and number of output classes.
-function JesNet1(; imgsize=(32,32,3), nclasses=100)
+function JesNet2(; imgsize=(32,32,3), nclasses=100)
     out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 256)
     return Chain(
-            # x -> reshape(x, imgsize..., :),
-            Conv((3, 3), imgsize[end]=>8, relu),
+            Conv((3, 3), imgsize[end]=>16, relu),
 			BatchNorm(8),
-            MaxPool((2, 2)),
-            Conv((3, 3), 8=>16, relu),
-			BatchNorm(16),
-            MaxPool((2, 2)),
-			Conv((3, 3), 16 => 32, relu, pad=(1, 1), stride=(1, 1)),
-			BatchNorm(32),
-			MaxPool((2,2)),
-			Conv((3, 3), 32 => 64, relu, pad=(1, 1), stride=(1, 1)),
-			BatchNorm(64),
+			Conv((3, 3), 64 => 64, relu, pad=(1, 1), stride=(1, 1)),
+		    BatchNorm(64),
+		    MaxPool((2,2)),
+		    Conv((3, 3), 64 => 128, relu, pad=(1, 1), stride=(1, 1)),
+		    BatchNorm(128),
+		    Conv((3, 3), 128 => 128, relu, pad=(1, 1), stride=(1, 1)),
 			MaxPool((2,2)),
             x -> reshape(x, :, size(x, 4)),
-			Dense(64, 4096, relu),
+			Dense(128, 300, relu),
 			Dropout(0.5),
-			Dense(4096, 4096, relu),
-			Dropout(0.5),
-			Dense(4096, nclasses),
+			Dense(300, 600, relu),
+			# Dropout(0.5),
+			Dense(60, nclasses),
 			softmax
           )
 end
@@ -94,7 +90,7 @@ round4(x) = round(x, digits=4)
 
 # arguments for the `train` function
 @with_kw mutable struct Args
-    η = 3e-4             # learning rate
+    η = 4e-2             # learning rate
     λ = 0                # L2 regularizer param, implemented as weight decay
     batchsize = 128      # batch size
     epochs = 20           # number of epochs
@@ -115,7 +111,7 @@ function plotdata()
     ## DATA
 
 
-    m = JesNet1()
+    m = JesNet2()
 
     BSON.@load "runs/lenet_batchsize=128_seed=0_η=0.0003_λ=0/model.bson" model
     Flux.loadparams!(m, params(model))
@@ -146,8 +142,20 @@ function plotconv()
 
 end
 
+function getSavedModel(file_name)
+
+    !isfile(file_name) && error("No existing file.")
+    BSON.@load file_name model
+
+    m = JesNet2()
+    Flux.loadparams!(m, params(model))
+
+    return m
+
+end
+
 function train(pretrained = nothing; kws...)
-	net_name = "JesNet1_22"
+	net_name = "JesNet2_4"
     args = Args(; kws...)
     args.seed > 0 && Random.seed!(args.seed)
     use_cuda = args.cuda && CUDAapi.has_cuda_gpu()
@@ -165,13 +173,13 @@ function train(pretrained = nothing; kws...)
 
 
 	println("asfadfaf")
-    ## MODEL AND OPTIMIZER
+	# model = JesNet2()
+	## MODEL AND OPTIMIZER
 	if !isnothing(pretrained) && isfile(pretrained)
 		@info "Loading pretrained model"
-		BSON.@load pretrained model
-		display(model)
+		model = getSavedModel(pretrained)
 	else
-		model = JesNet1()
+		model = JesNet2()
 	end
 
 	model |> device
@@ -179,11 +187,11 @@ function train(pretrained = nothing; kws...)
 
 
 
-	@info "JesNet1 model: $(num_params(model)) trainable params"
+	@info "JesNet2 model: $(num_params(model)) trainable params"
 
     ps = Flux.params(model)
 
-    opt = ADAMW(args.η)
+    opt = ADAMW()
     if args.λ > 0
         opt = Optimiser(opt, WeightDecay(args.λ))
     end
