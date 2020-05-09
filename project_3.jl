@@ -23,26 +23,47 @@ imshow!(p, x; kargs...) = plot!(p, Gray.(x);kargs...)
 # JesNet2 "constructor".
 # The model can be adapted to any image size
 # and number of output classes.
+
+DeDiosNet1 = Chain(
+	Conv((3, 3), 3 => 16, relu, pad=(2, 2), stride=(1, 1)),
+	MaxPool((2,2), stride=(2, 2)),
+	Conv((3, 3), 16 => 20, relu, pad=(2, 2), stride=(1, 1)),
+	MaxPool((2,2), stride=(2, 2)),
+	Conv((3, 3), 20 => 32, relu, pad=(2, 2), stride=(1, 1)),
+	MaxPool((2,2), stride=(2, 2)),
+	x -> reshape(x, :, size(x, 4)),
+	Dense(800, 1024),
+	Dense(1024, 2048),
+	Dropout(0.5),
+	Dense(2048, nclasses),
+	softmax)
+
+DeDiosNet2 = Chain(
+	Conv((5, 5), 3 => 8, relu, pad=(2, 2), stride=(1, 1)),
+	BatchNorm(16),
+	MaxPool((2,2), stride=(2, 2)),
+	Conv((5, 5), 8 => 16, relu, pad=(2, 2), stride=(1, 1)),
+	BatchNorm(16),
+	MaxPool((2,2), stride=(2, 2)),
+	Conv((5, 5), 16 => 32, relu, pad=(2, 2), stride=(1, 1)),
+	MaxPool((2,2), stride=(2, 2)),
+	x -> reshape(x, :, size(x, 4)),
+	Dense(800, nclasses),
+	softmax)
+
 function JesNet2(; imgsize=(32,32,3), nclasses=100)
     out_conv_size = (imgsize[1]÷4 - 3, imgsize[2]÷4 - 3, 256)
-    return Chain(
-            Conv((3, 3), imgsize[end]=>16, relu),
-			BatchNorm(8),
-			Conv((3, 3), 64 => 64, relu, pad=(1, 1), stride=(1, 1)),
-		    BatchNorm(64),
-		    MaxPool((2,2)),
-		    Conv((3, 3), 64 => 128, relu, pad=(1, 1), stride=(1, 1)),
-		    BatchNorm(128),
-		    Conv((3, 3), 128 => 128, relu, pad=(1, 1), stride=(1, 1)),
-			MaxPool((2,2)),
-            x -> reshape(x, :, size(x, 4)),
-			Dense(128, 300, relu),
-			Dropout(0.5),
-			Dense(300, 600, relu),
-			# Dropout(0.5),
-			Dense(60, nclasses),
-			softmax
-          )
+    return  Chain(
+	  Conv((3, 3), 3 => 16, relu, pad=(2, 2), stride=(1, 1)),
+	  MaxPool((2,2), stride=(2, 2)),
+	  Conv((3, 3), 16 => 20, relu, pad=(2, 2), stride=(1, 1)),
+	  MaxPool((2,2), stride=(2, 2)),
+	  Conv((3, 3), 20 => 32, relu, pad=(2, 2), stride=(1, 1)),
+	  MaxPool((2,2), stride=(2, 2)),
+	  x -> reshape(x, :, size(x, 4)),
+	  Dense(800, 100),
+	  softmax)
+
 end
 
 function get_data(args)
@@ -249,7 +270,7 @@ function train(pretrained = nothing; kws...)
     end
 end
 
-train()
+train("runs/JesNet2_4__batchsize=128_seed=0_η=0.04_λ=0/model.bson")
 
 #plotdata()
 # plotconv()
