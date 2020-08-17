@@ -18,39 +18,48 @@ urlcolor: blue
 
 # Introduction
 
-This project is focused on the design and implementation of two autoencoders based on Artificial Neural Networks (ANNs)  to denoise gray scale images. Here,  multilayer perceptron are considered.
+This project is focused on the design and implementation of two autoencoders based on
+Artificial Neural Networks (ANNs) one to denoise grayscale images and another for sampling learned patterns in the latent space. Here, multilayer perceptrons are considered.
 
-The optimization method to train autoencoders was the well-known optimization method called [ADAM](https://arxiv.org/abs/1412.6980v8), with learning rate fixed to $\eta =1\times10^{-3}$ and the [mean squared error loss function](https://research.google/pubs/pub38136.pdf) is considered here. The following section is focused on describing the dataset to perform different experiments.
 
-![ The list of classes in the CIFAR-100.](imgs/cifar100.png){ width=90%  #fig:cifar}
+![JANet-$N$ autoencoder. The number of neurons for each layer is at bottom of each layer.](img-ae/ae.png){ width=95% #fig:janet}
+
+At the beginning, Artificial Neural Networks (ANNs) are used for supervised learning tasks how ever those are also used for unsupervised learning issues. Here, I tackle the 
+problem of denoising images via [Autoencoders](https://www.sciencedirect.com/science/article/pii/S0925231216315533) which are techniques designed to efficiently learn, compress and encode data by compressing and reconstructing the data back, i.e., from the reduced encoded data representation obtain a representation as similar to the given input as possible.
+
+Following section is used to solve an interesting problem about encode grayscale images corrupted by salt and pepper noise.
+
+# Design
+
+Here a multilayer-perceptron-based autoencoder is proposed such that the amount of latent variables (compression level) can be handled by a user-defined parameter $N$. This autoencoder is then called JANet-$N$. The encoder and the decoder consist on three layers: input, a hidden (activated by the RELU function) and an output layer.
+It worth mentioning the output is the results of applying the sigmoid function in order to obtain normalized responses whilst the decoder output is activated by the LeakyRELU. Figure @fig:janet describes the autoencoder.
+
+
+The optimization method to train autoencoders was the well-known optimization method called
+[ADAM](https://arxiv.org/abs/1412.6980v8), with learning rate fixed to $\eta =1\times 10^{-3}$
+and the [Mean Squared Error Loss](https://research.google/pubs/pub38136.pdf) function is considered.
+The following section is focused on describing the dataset to perform different experiments.
+
+![ The Fashion-MNIST dataset.](img-ae/fashion-mnist.png){ width=99%  #fig:fashionmnist}
 
 ## Dataset
 
 
-The database used here is the [CIFAR-100](https://www.cs.toronto.edu/~kriz/cifar.html) dataset that consists of 60000 color images ($32 \times 32$) in 100 classes, with 1000 images per class. There are 50000 training images and 10000 test images (see Figure @fig:cifar).   The 100 classes in the CIFAR-100 are grouped into 20 superclasses. Each image comes with a "fine" label (the class to which it belongs) and a "coarse" label (the superclass to which it belongs).
-
-
-
-Different CNNs have been proposed to improve the learning rate on that dataset. Actually,  one of best algorithm is a [Fast and Accurate Deep Network Learning by Exponential Linear Units](http://arxiv.org/abs/1511.07289) with 75.72% accuracy.
-
-# Desing
-
-![Convolutional Neural Network used in this project.](imgs/dediosnet.png){ width=95% #fig:cnn}
-
-Here, LeNet5 and VGG19 were considered as inspiration to design two CNNs called JANet 1 and JANet 2. Figure @fig:cnn describes those networks. It worth noting that JANet1 uses three small convolutional masks ($3\times 3$) as in VGG19 in order to keep low number of parameters but using the same optimizer and loss function as in LeNet5. On the other hand,  JANet 2 uses $5\times 5$ kernels before  batch normalization  and MaxPooling leyers as in VGG19.
-Moreover, JANet1 uses 3133464 parameters whilst JANet2 uses 96820 parameters.
+The database used here is the [Fashion-MNIST](https://www.cs.toronto.edu/~kriz/fashionmnist.html)
+dataset that consists of 60000 images ($28 \times 28$) for the training stage (see Figure @fig:fashionmnist).
 
 
 # Implementation
 
-JANet 1 and JANet 2 was implemented in the [Julia Programming Language](https://julialang.org/) since it is open-source software and provides an extensible  library for machine learning called [Flux](https://fluxml.ai). The implementation of the CNNs described before  are as follows:
+JANet 1 and JANet 2 was implemented in the [Julia Programming Language](https://julialang.org/)
+since it is open-source software and provides an extensible  library for machine learning
+called [Flux](https://fluxml.ai). The implementation of the CNNs described before  are as follows:
 
 
 ```julia
 encoder = Chain(
     Dense(28^2, 12^2, relu),
-    Dense(12^2, N,
-    sigmoid)
+    Dense(12^2, N, sigmoid)
 ) |> gpu
 
 decoder = Chain(
@@ -62,8 +71,20 @@ autoencoder = Chain(encoder, decoder)
 ```
 
 
-In this work 60000 instances were divided into 50000 for training and 10000 for testing and to validate the models. All experiments ran in a laptop with an AMD Ryzen 5 3500u $\times$ 8 processor and 12GB RAM.
+In this work 60000 instances were divided into 50000 for training and 10000 for testing
+and to validate the models. All experiments ran in a laptop with an AMD Ryzen 5 3500u $\times$
+8 processor and 12GB RAM.
 
+
+![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
+
+
+![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images.](img-ae/ae-n50-50-90.png){width=90%  #fig:results2}
+
+
+
+
+![Convolutional Neural Network used in this project.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
 
 
 
