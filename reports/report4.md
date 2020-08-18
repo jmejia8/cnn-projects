@@ -78,7 +78,6 @@ JANet-$N$ was implemented in the [Julia Programming Language](https://julialang.
 since it is open-source software and provides an extensible  library for machine learning
 called [Flux](https://fluxml.ai). The implementation of JANet-$N$ is described as follows:
 
-
 ```julia
 encoder = Chain(
     Dense(28^2, 12^2, relu),
@@ -95,7 +94,8 @@ autoencoder = Chain(encoder, decoder)
 
 ![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
 
-In this work the 60000 images where used in batches with size 1000. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM.
+In this work the 60000 images where used in batches with size 1000. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM. JANet-$N$
+run up to during 30 epochs.
 
 
 
@@ -125,7 +125,7 @@ to predict different images. Note that the dominant figures were shoes, pants, s
 
 ![Sampling JANet-2 decoded files. Note that JANet-2 only requires two latent variables.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
 
-
+All the resources used in this project can be downloaded form [my github repostory](https://github.com/jmejia8/cnn-projects).
 
 
 
