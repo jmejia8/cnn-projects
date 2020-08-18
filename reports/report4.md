@@ -63,7 +63,7 @@ The [Mean Squared Error Loss](https://research.google/pubs/pub38136.pdf) functio
 for optimization procedure.
 The following section is focused on describing the dataset to perform different experiments.
 
-![ The Fashion-MNIST dataset.](img-ae/fashion-mnist.png){ width=100%  #fig:fashionmnist}
+![ The Fashion-MNIST dataset.](img-ae/fashion-mnist.png){ width=60%  #fig:fashionmnist}
 
 
 
@@ -93,30 +93,40 @@ decoder = Chain(
 autoencoder = Chain(encoder, decoder)
 ```
 
+![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
 
 In this work the 60000 images where used in batches with size 1000. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM.
 
 
-![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
 
 
-Figure @fig:results1 show the result on how JANet-50 learns. It worth noticing that the
+Figure @fig:results1 show the input output and predicted (by JANet-50) images with different noise probability
+values. It worth noticing that the
 proposed autoencoder is able to reduce the noise however the recovered images show poor
 quality in comparison with the original images. That is because of JANet-50 compress the
-data.
+data. It can be observed in Figure @fig:results2 what happen when the probability noise increases (lost of precision). You can find the original images at [github.com/jmejia8/cnn-projects/tree/master/reports/img-ae](https://github.com/jmejia8/cnn-projects/tree/master/reports/img-ae)
+
+
+
+
 
 ![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-50-90.png){width=90%  #fig:results2}
 
-![Convergence graph.](img-ae/conver.png){ width=99%  #fig:conva}
-
-![Convergence graph.](img-ae/conver2.png){ width=99%  #fig:convb}
-
-
-![Sampling JANet-2 decoded files. Note that JANet-2 only require two latent variables.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
-
-
-
 Figures @fig:conva and @fig:convb shows information about the convergence of JANet-50 with different noise percentage.
+
+![Convergence graph of JANet-50.](img-ae/conver.png){ width=80%  #fig:conva}
+
+![Convergence graph of JANet-50 in additional experiments.](img-ae/conver2.png){ width=80%  #fig:convb}
+
+
+For the second experiment, I use the JANet-$N$ with $N = 2$ for visualizations purposes.
+That means JANet-2 could compress the data as much as possible however we can sample patters learned by this autoencoder. JANet-2 was trained as described before but using 0% for the noise probability. Figure @fig:latent shows how JANet-2 was able
+to predict different images. Note that the dominant figures were shoes, pants, sweaters and shirts.
+
+![Sampling JANet-2 decoded files. Note that JANet-2 only requires two latent variables.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
+
+
+
 
 
 
