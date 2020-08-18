@@ -18,8 +18,8 @@ urlcolor: blue
 
 # Introduction
 
-At the beginning, Artificial Neural Networks (ANNs) have been used for supervised learning
-tasks however those can be used for unsupervised learning applications. Here, I tackle the 
+Artificial Neural Networks (ANNs) have been used for supervised learning
+tasks however they can be used also for unsupervised learning applications. Here, I tackle the 
 problem of denoising images via [Autoencoders](https://www.sciencedirect.com/science/article/pii/S0925231216315533)
 which are techniques designed to efficiently learn, compress and encode data by compressing
 and reconstructing the data back, i.e., from the reduced encoded data representation obtain
@@ -27,12 +27,12 @@ a representation as similar to the given input as possible.
 
 
 This project is then focused on the design and implementation of two autoencoders based on
-Artificial Neural Networks (ANNs) the first one to denoise grayscale images and the second for sampling
+Artificial Neural Networks (ANNs) the first one for denoising grayscale images and the second for sampling
 learned patterns in the latent space. Here, multilayer perceptrons are considered. To do
 that, the following condition are imposed:
 
 1. Assume you have a dataset of images pre-processed.
-2. Used the given dataset to add controlled salt-and-pepper noise with different probability
+2. Use the given dataset to add controlled salt-and-pepper noise with different probability values
    (0.01, 0.05, 0.1 and 0.2).
 3. Propose an autoencoder for denoising data:
     - Input: Original data.
@@ -41,14 +41,11 @@ that, the following condition are imposed:
 
 
 A second experimentation is for sampling latent variables of a proposed autoencoder and
-observe which patterns the autoencoder can learns.
+observe which patterns the autoencoder can learn.
 
 ![JANet-$N$ autoencoder. The number of neurons for each layer is at bottom of the respective layer.](img-ae/ae.png){ width=100% #fig:janet}
 
 
-
-Following section is used to solve an interesting problem about encode grayscale images corrupted
-by salt-and-pepper noise.
 
 # Methodology
 
