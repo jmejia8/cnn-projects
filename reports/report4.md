@@ -51,11 +51,9 @@ dataset that consists of 60000 images ($28 \times 28$) for the training stage (s
 
 # Implementation
 
-JANet 1 and JANet 2 was implemented in the [Julia Programming Language](https://julialang.org/)
+JANet-$N$ was implemented in the [Julia Programming Language](https://julialang.org/)
 since it is open-source software and provides an extensible  library for machine learning
-called [Flux](https://fluxml.ai). The implementation of the CNNs described before  are as follows:
-
-
+called [Flux](https://fluxml.ai). The implementation of JANet-$N$ is described as follows:
 ```julia
 encoder = Chain(
     Dense(28^2, 12^2, relu),
@@ -71,27 +69,26 @@ autoencoder = Chain(encoder, decoder)
 ```
 
 
-In this work 60000 instances were divided into 50000 for training and 10000 for testing
-and to validate the models. All experiments ran in a laptop with an AMD Ryzen 5 3500u $\times$
-8 processor and 12GB RAM.
+In this work the 60000 images where used in batches with size 1000. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM.
 
 
-![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
+![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
 
 
-![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images.](img-ae/ae-n50-50-90.png){width=90%  #fig:results2}
+![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-50-90.png){width=90%  #fig:results2}
 
 
 
 
-![Convolutional Neural Network used in this project.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
+![Sampling JANet-2 decoded files. Note that JANet-2 only require two latent variables.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
 
 
 
 Figures @fig:conva and @fig:convb shows information about the convergence of the JANet 1  and JANet 2, respectively.
 The accuracy obtained on the validation set for 100 classes was 50% (JANet1) and 59% (JANet2) in 35 epochs. The [source code](https://github.com/jmejia8/cnn-projects) is available in order to you can replicate those results.
 
-![Convergence graph.](imgs/jenet1.png){ width=99%  #fig:conva}
+![Convergence graph.](img-ae/conver.png){ width=99%  #fig:conva}
+![Convergence graph.](img-ae/conver2.png){ width=99%  #fig:conv}
 
 
 ![Convergence graph.](imgs/jenet2.png){ width=99%  #fig:convb}
