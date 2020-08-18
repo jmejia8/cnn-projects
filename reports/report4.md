@@ -91,8 +91,7 @@ autoencoder = Chain(encoder, decoder)
 
 ![Denoising via JANet-50. Four study cases are considered related to the salt and paper noise percentage. Each image presents three rows: (1) original images (2) corrupted images and (3) decoded images via JANet-50.](img-ae/ae-n50-1-20.png){width=90%  #fig:results1}
 
-In this work the 60000 images where used in batches with size 1000. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM. JANet-$N$
-run up to during 30 epochs.
+In this work the 60000 images where used in batches with size 1000. JANet-$N$ was limited to iterate during 30 epochs. All experiments ran in a PC Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz with 7GB RAM and GeForce GTX 1050 Ti 4GB VRAM. 
 
 
 
@@ -101,7 +100,7 @@ Figure @fig:results1 show the input output and predicted (by JANet-50) images wi
 values. It worth noticing that the
 proposed autoencoder is able to reduce the noise however the recovered images show poor
 quality in comparison with the original images. That is because of JANet-50 compress the
-data. It can be observed in Figure @fig:results2 what happen when the probability noise increases (lost of precision). You can find the original images at [github.com/jmejia8/cnn-projects/tree/master/reports/img-ae](https://github.com/jmejia8/cnn-projects/tree/master/reports/img-ae)
+data. It can be observed in Figure @fig:results2 what happen when the probability noise increases (loss of precision). You can find the original images at [github.com/jmejia8/cnn-projects/tree/master/reports/img-ae](https://github.com/jmejia8/cnn-projects/tree/master/reports/img-ae)
 
 
 
@@ -122,7 +121,7 @@ to predict different images. Note that the dominant figures were shoes, pants, s
 
 ![Sampling JANet-2 decoded files. Note that JANet-2 only requires two latent variables.](img-ae/algo_N2_p0.0.png){ width=95% #fig:latent}
 
-All the resources used in this project can be downloaded form [my github repostory](https://github.com/jmejia8/cnn-projects).
+All the resources used in this project can be downloaded from [my github repostory](https://github.com/jmejia8/cnn-projects).
 
 
 
